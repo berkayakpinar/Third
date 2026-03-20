@@ -1,0 +1,59 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "text": "Most consumed beverage at breakfast?",
+      "answers": [
+        {"keywords": ["tea", "black tea"], "displayWord": "Tea"},
+        {"keywords": ["coffee", "filter coffee"], "displayWord": "Coffee"},
+        {"keywords": ["orange juice", "juice"], "displayWord": "Orange Juice"},
+        {"keywords": ["milk"], "displayWord": "Milk"},
+        {"keywords": ["water"], "displayWord": "Water"}
+      ]
+    },
+    {
+      "id": 2,
+      "text": "Largest lake in the world?",
+      "answers": [
+        {"keywords": ["caspian sea"], "displayWord": "Caspian Sea"},
+        {"keywords": ["lake superior"], "displayWord": "Lake Superior"},
+        {"keywords": ["lake victoria"], "displayWord": "Lake Victoria"},
+        {"keywords": ["mediterranean"], "displayWord": "Mediterranean"},
+        {"keywords": ["lake huron"], "displayWord": "Lake Huron"}
+      ]
+    },
+    {
+      "id": 3,
+      "text": "Year World War II ended?",
+      "answers": [
+        {"keywords": ["1945"], "displayWord": "1945"},
+        {"keywords": ["1939"], "displayWord": "1939"},
+        {"keywords": ["1918"], "displayWord": "1918"},
+        {"keywords": ["1960"], "displayWord": "1960"},
+        {"keywords": ["1950"], "displayWord": "1950"}
+      ]
+    },
+    {
+      "id": 4,
+      "text": "Largest ocean on Earth?",
+      "answers": [
+        {"keywords": ["pacific", "pacific ocean"], "displayWord": "Pacific"},
+        {"keywords": ["atlantic", "atlantic ocean"], "displayWord": "Atlantic"},
+        {"keywords": ["indian", "indian ocean"], "displayWord": "Indian"},
+        {"keywords": ["arctic", "arctic ocean"], "displayWord": "Arctic"},
+        {"keywords": ["mediterranean"], "displayWord": "Mediterranean"}
+      ]
+    },
+    {
+      "id": 5,
+      "text": "Capital of France?",
+      "answers": [
+        {"keywords": ["paris"], "displayWord": "Paris"},
+        {"keywords": ["london"], "displayWord": "London"},
+        {"keywords": ["berlin"], "displayWord": "Berlin"},
+        {"keywords": ["rome"], "displayWord": "Rome"},
+        {"keywords": ["madrid"], "displayWord": "Madrid"}
+      ]
+    }
+  ]
+}

@@ -58,6 +58,11 @@
 			path = thirdUITests;
 			sourceTree = "<group>";
 		};
+		8B323EA42F633D5900CB5272 /* CLAUDE */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = CLAUDE;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +93,7 @@
 		8B323E6C2F633BD500CB5272 = {
 			isa = PBXGroup;
 			children = (
+				8B323EA42F633D5900CB5272 /* CLAUDE */,
 				8B323E772F633BD500CB5272 /* third */,
 				8B323E892F633BD600CB5272 /* thirdTests */,
 				8B323E932F633BD600CB5272 /* thirdUITests */,
@@ -122,6 +128,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				8B323E772F633BD500CB5272 /* third */,
+				8B323EA42F633D5900CB5272 /* CLAUDE */,
 			);
 			name = third;
 			packageProductDependencies = (
