@@ -10,13 +10,15 @@ import SwiftUI
 @main
 struct thirdApp: App {
     @State private var sessionManager = SessionManager.shared
+    @State private var userSettings = UserSettings()
 
     var body: some Scene {
         WindowGroup {
             MainMenuView()
                 .environment(sessionManager)
+                .environment(userSettings)
                 .onAppear {
-                    GameData.load()
+                    GameData.shared.load()
                 }
         }
     }

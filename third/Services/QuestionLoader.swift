@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "third", category: "QuestionLoader")
 
 enum QuestionError: Error, LocalizedError {
     case fileNotFound
@@ -39,8 +42,7 @@ class QuestionLoader {
         }
 
         guard let validUrl = url else {
-            print("❌ \(fileName).json not found in bundle")
-            print("Bundle contents: \(Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? [])")
+            logger.error("\(fileName).json not found in bundle")
             throw QuestionError.fileNotFound
         }
 
@@ -52,13 +54,15 @@ class QuestionLoader {
             // DTO'ları gerçek model objelerine dönüştür
             return container.questions.map { dto in
                 let answers = dto.answers.enumerated().map { index, answerDTO in
-                    let type: AnswerType
-                    switch index {
-                    case 0: type = .trap
-                    case 2: type = .target
-                    default: type = .normal
-                    }
-                    return AnswerOption(keywords: answerDTO.keywords, displayWord: answerDTO.displayWord, type: type)
+                    let answerType = answerDTO.type.flatMap(AnswerType.init(rawValue:)) ?? {
+                        // Geriye dönük uyumluluk: JSON'da type yoksa index'e göre belirle
+                        switch index {
+                        case 0: return AnswerType.trap
+                        case 2: return AnswerType.target
+                        default: return AnswerType.normal
+                        }
+                    }()
+                    return AnswerOption(keywords: answerDTO.keywords, displayWord: answerDTO.displayWord, type: answerType)
                 }
                 return GameQuestion(id: dto.id, text: dto.text, answers: answers)
             }
@@ -83,4 +87,6 @@ struct QuestionDTO: Codable {
 struct AnswerOptionDTO: Codable {
     let keywords: [String]
     let displayWord: String
+    /// Explicit answer type. If absent, type is derived from position in array (legacy fallback).
+    let type: String?
 }

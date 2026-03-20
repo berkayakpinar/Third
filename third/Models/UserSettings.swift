@@ -31,15 +31,14 @@ class UserSettings {
     // MARK: - Sound Settings
     var soundEffectsEnabled: Bool {
         didSet {
-            UserDefaults.standard.set(soundEffectsEnabled, forKey: "soundEffectsEnabled")
+            UserDefaults.standard.set(soundEffectsEnabled, forKey: UserDefaultsKey.soundEffectsEnabled.rawValue)
         }
     }
-
 
     // MARK: - Language
     var selectedLanguage: AppLanguage {
         didSet {
-            UserDefaults.standard.set(selectedLanguage.rawValue, forKey: "selectedLanguage")
+            UserDefaults.standard.set(selectedLanguage.rawValue, forKey: UserDefaultsKey.selectedLanguage.rawValue)
         }
     }
 
@@ -50,9 +49,9 @@ class UserSettings {
     // MARK: - Init
     init() {
         // Load from UserDefaults or use defaults
-        self.soundEffectsEnabled = UserDefaults.standard.object(forKey: "soundEffectsEnabled") as? Bool ?? true
+        self.soundEffectsEnabled = UserDefaults.standard.object(forKey: UserDefaultsKey.soundEffectsEnabled.rawValue) as? Bool ?? true
 
-        let languageRaw = UserDefaults.standard.string(forKey: "selectedLanguage") ?? AppLanguage.turkish.rawValue
+        let languageRaw = UserDefaults.standard.string(forKey: UserDefaultsKey.selectedLanguage.rawValue) ?? AppLanguage.turkish.rawValue
         self.selectedLanguage = AppLanguage(rawValue: languageRaw) ?? .turkish
     }
 

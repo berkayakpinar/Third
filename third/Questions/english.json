@@ -4,55 +4,55 @@
       "id": 1,
       "text": "Most consumed beverage at breakfast?",
       "answers": [
-        {"keywords": ["tea", "black tea"], "displayWord": "Tea"},
-        {"keywords": ["coffee", "filter coffee"], "displayWord": "Coffee"},
-        {"keywords": ["orange juice", "juice"], "displayWord": "Orange Juice"},
-        {"keywords": ["milk"], "displayWord": "Milk"},
-        {"keywords": ["water"], "displayWord": "Water"}
+        {"keywords": ["tea", "black tea"], "displayWord": "Tea", "type": "trap"},
+        {"keywords": ["coffee", "filter coffee"], "displayWord": "Coffee", "type": "normal"},
+        {"keywords": ["orange juice", "juice"], "displayWord": "Orange Juice", "type": "target"},
+        {"keywords": ["milk"], "displayWord": "Milk", "type": "normal"},
+        {"keywords": ["water"], "displayWord": "Water", "type": "normal"}
       ]
     },
     {
       "id": 2,
       "text": "Largest lake in the world?",
       "answers": [
-        {"keywords": ["caspian sea"], "displayWord": "Caspian Sea"},
-        {"keywords": ["lake superior"], "displayWord": "Lake Superior"},
-        {"keywords": ["lake victoria"], "displayWord": "Lake Victoria"},
-        {"keywords": ["mediterranean"], "displayWord": "Mediterranean"},
-        {"keywords": ["lake huron"], "displayWord": "Lake Huron"}
+        {"keywords": ["caspian sea"], "displayWord": "Caspian Sea", "type": "trap"},
+        {"keywords": ["lake superior"], "displayWord": "Lake Superior", "type": "normal"},
+        {"keywords": ["lake victoria"], "displayWord": "Lake Victoria", "type": "target"},
+        {"keywords": ["mediterranean"], "displayWord": "Mediterranean", "type": "normal"},
+        {"keywords": ["lake huron"], "displayWord": "Lake Huron", "type": "normal"}
       ]
     },
     {
       "id": 3,
       "text": "Year World War II ended?",
       "answers": [
-        {"keywords": ["1945"], "displayWord": "1945"},
-        {"keywords": ["1939"], "displayWord": "1939"},
-        {"keywords": ["1918"], "displayWord": "1918"},
-        {"keywords": ["1960"], "displayWord": "1960"},
-        {"keywords": ["1950"], "displayWord": "1950"}
+        {"keywords": ["1945"], "displayWord": "1945", "type": "trap"},
+        {"keywords": ["1939"], "displayWord": "1939", "type": "normal"},
+        {"keywords": ["1918"], "displayWord": "1918", "type": "target"},
+        {"keywords": ["1960"], "displayWord": "1960", "type": "normal"},
+        {"keywords": ["1950"], "displayWord": "1950", "type": "normal"}
       ]
     },
     {
       "id": 4,
       "text": "Largest ocean on Earth?",
       "answers": [
-        {"keywords": ["pacific", "pacific ocean"], "displayWord": "Pacific"},
-        {"keywords": ["atlantic", "atlantic ocean"], "displayWord": "Atlantic"},
-        {"keywords": ["indian", "indian ocean"], "displayWord": "Indian"},
-        {"keywords": ["arctic", "arctic ocean"], "displayWord": "Arctic"},
-        {"keywords": ["mediterranean"], "displayWord": "Mediterranean"}
+        {"keywords": ["pacific", "pacific ocean"], "displayWord": "Pacific", "type": "trap"},
+        {"keywords": ["atlantic", "atlantic ocean"], "displayWord": "Atlantic", "type": "normal"},
+        {"keywords": ["indian", "indian ocean"], "displayWord": "Indian", "type": "target"},
+        {"keywords": ["arctic", "arctic ocean"], "displayWord": "Arctic", "type": "normal"},
+        {"keywords": ["mediterranean"], "displayWord": "Mediterranean", "type": "normal"}
       ]
     },
     {
       "id": 5,
       "text": "Capital of France?",
       "answers": [
-        {"keywords": ["paris"], "displayWord": "Paris"},
-        {"keywords": ["london"], "displayWord": "London"},
-        {"keywords": ["berlin"], "displayWord": "Berlin"},
-        {"keywords": ["rome"], "displayWord": "Rome"},
-        {"keywords": ["madrid"], "displayWord": "Madrid"}
+        {"keywords": ["paris"], "displayWord": "Paris", "type": "trap"},
+        {"keywords": ["london"], "displayWord": "London", "type": "normal"},
+        {"keywords": ["berlin"], "displayWord": "Berlin", "type": "target"},
+        {"keywords": ["rome"], "displayWord": "Rome", "type": "normal"},
+        {"keywords": ["madrid"], "displayWord": "Madrid", "type": "normal"}
       ]
     }
   ]

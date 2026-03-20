@@ -2,82 +2,105 @@
 //  GameData.swift
 //  third
 //
-//  Created by Berkay Akpınar on 12.03.2026.
+//  Converted from a static enum to a class so it can:
+//    • Conform to QuestionProviding for dependency injection
+//    • Be replaced with a MockQuestionProvider in tests
 //
 
 import Foundation
+import OSLog
 
-enum GameData {
-    // MARK: - Question Bank
-    private static var questions: [GameQuestion] = []
-    private static var currentLanguage: AppLanguage = .turkish
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "third", category: "GameData")
 
-    // MARK: - Used Questions Tracking
-    private static var usedQuestionIndices: Set<Int> = []
+// MARK: - GameData
 
-    // MARK: - Load Questions from JSON
-    static func load() {
+final class GameData: QuestionProviding {
+
+    // MARK: - Singleton (production default)
+    static let shared = GameData()
+
+    // MARK: - Private State
+    private var questions: [GameQuestion] = []
+    private var currentLanguage: AppLanguage = .turkish
+    private var usedQuestionIndices: Set<Int> = []
+
+    private init() {}
+
+    // MARK: - QuestionProviding
+
+    /// Loads questions for the active language.
+    /// Pass `force: true` to reload after a language change.
+    func load(force: Bool = false) {
         let userSettings = UserSettings()
         let language = userSettings.selectedLanguage
 
-        // Dil değiştiyse soruları yeniden yükle
-        if language != currentLanguage || questions.isEmpty {
-            currentLanguage = language
-            do {
-                questions = try QuestionLoader.loadQuestions(for: language)
-                print("✅ Loaded \(questions.count) questions for \(language.displayName)")
-            } catch {
-                print("❌ Failed to load questions: \(error.localizedDescription)")
-                questions = []
-            }
+        guard force || language != currentLanguage || questions.isEmpty else { return }
+
+        currentLanguage = language
+        do {
+            questions = try QuestionLoader.loadQuestions(for: language)
+            logger.info("Loaded \(self.questions.count) questions for \(language.displayName)")
+        } catch {
+            questions = []
+            logger.error("Failed to load questions: \(error.localizedDescription)")
+            assertionFailure("Question loading failed — check that \(language.rawValue).json exists in the bundle.")
         }
     }
 
-    // MARK: - Force reload (dil değiştiğinde çağrılır)
-    static func reload() {
-        currentLanguage = .turkish // Farklı dil gibi görünsün diye
-        load()
-    }
-
-    // MARK: - Get Next Question
-    static func getNextQuestion() -> GameQuestion {
-        // Fallback soru - JSON yüklenemezse kullanılır
-        let fallbackQuestion = GameQuestion(
-            id: 0,
-            text: "Sorular yüklenemedi. Lütfen uygulamayı yeniden başlatın.",
-            answers: [
-                AnswerOption(keywords: ["hata"], displayWord: "Hata", type: .trap),
-                AnswerOption(keywords: ["yükle"], displayWord: "Yükle", type: .normal),
-                AnswerOption(keywords: ["tekrar"], displayWord: "Tekrar", type: .target),
-                AnswerOption(keywords: ["başlat"], displayWord: "Başlat", type: .normal),
-                AnswerOption(keywords: ["uygulama"], displayWord: "Uygulama", type: .normal)
-            ]
-        )
+    /// Returns the next question, skipping recently used ones.
+    func getNextQuestion() -> GameQuestion {
+        let fallback = makeFallbackQuestion()
 
         guard !questions.isEmpty else {
-            print("Warning: No questions loaded! Using fallback.")
-            return fallbackQuestion
+            logger.warning("No questions loaded, returning fallback.")
+            return fallback
         }
 
-        // Find available questions (not used yet)
         let availableIndices = questions.indices.filter { !usedQuestionIndices.contains($0) }
 
-        // If all questions used, reset and start over
         if availableIndices.isEmpty {
             usedQuestionIndices.removeAll()
-            return questions.randomElement() ?? fallbackQuestion
+            return questions.randomElement() ?? fallback
         }
 
-        // Get random question from available ones
-        guard let randomIndex = availableIndices.randomElement() else {
-            return fallbackQuestion
-        }
+        guard let randomIndex = availableIndices.randomElement() else { return fallback }
         usedQuestionIndices.insert(randomIndex)
         return questions[randomIndex]
     }
 
-    // MARK: - Reset
-    static func resetProgress() {
+    /// Resets the used-questions tracker so all questions become available again.
+    func resetProgress() {
         usedQuestionIndices.removeAll()
+    }
+
+    // MARK: - Private
+
+    private func makeFallbackQuestion() -> GameQuestion {
+        switch currentLanguage {
+        case .english:
+            return GameQuestion(
+                id: 0,
+                text: "Questions could not be loaded. Please restart the app.",
+                answers: [
+                    AnswerOption(keywords: ["error"],  displayWord: "Error",  type: .trap),
+                    AnswerOption(keywords: ["load"],   displayWord: "Load",   type: .normal),
+                    AnswerOption(keywords: ["retry"],  displayWord: "Retry",  type: .target),
+                    AnswerOption(keywords: ["start"],  displayWord: "Start",  type: .normal),
+                    AnswerOption(keywords: ["app"],    displayWord: "App",    type: .normal)
+                ]
+            )
+        case .turkish:
+            return GameQuestion(
+                id: 0,
+                text: "Sorular yüklenemedi. Lütfen uygulamayı yeniden başlatın.",
+                answers: [
+                    AnswerOption(keywords: ["hata"],       displayWord: "Hata",       type: .trap),
+                    AnswerOption(keywords: ["yükle"],      displayWord: "Yükle",      type: .normal),
+                    AnswerOption(keywords: ["tekrar"],     displayWord: "Tekrar",     type: .target),
+                    AnswerOption(keywords: ["başlat"],     displayWord: "Başlat",     type: .normal),
+                    AnswerOption(keywords: ["uygulama"],  displayWord: "Uygulama",   type: .normal)
+                ]
+            )
+        }
     }
 }

@@ -9,20 +9,20 @@ import SwiftUI
 
 @Observable
 class SettingsViewModel {
-    var settings: UserSettings
     var showResetConfirmation = false
 
-    init() {
-        self.settings = UserSettings()
+    private let questionProvider: QuestionProviding
+
+    init(questionProvider: QuestionProviding = GameData.shared) {
+        self.questionProvider = questionProvider
     }
 
-    func toggleSoundEffects() {
+    func toggleSoundEffects(settings: UserSettings) {
         settings.soundEffectsEnabled.toggle()
     }
 
-    func toggleLanguage() {
+    func toggleLanguage(settings: UserSettings) {
         settings.selectedLanguage = settings.selectedLanguage == .turkish ? .english : .turkish
-        // Dil değiştiğinde soruları yeniden yükle
-        GameData.reload()
+        questionProvider.load(force: true)
     }
 }

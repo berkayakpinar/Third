@@ -8,11 +8,11 @@
 import SwiftUI
 
 private struct NavigationPathKey: EnvironmentKey {
-    static let defaultValue: Binding<NavigationPath>? = nil
+    static let defaultValue: Binding<[AppRoute]>? = nil
 }
 
 extension EnvironmentValues {
-    var navigationPath: Binding<NavigationPath>? {
+    var navigationPath: Binding<[AppRoute]>? {
         get { self[NavigationPathKey.self] }
         set { self[NavigationPathKey.self] = newValue }
     }
@@ -20,6 +20,7 @@ extension EnvironmentValues {
 
 struct ProfileView: View {
     @Environment(\.navigationPath) private var navigationPath
+    @Environment(UserSettings.self) private var userSettings
     @State private var viewModel = ProfileViewModel()
     @State private var showResetConfirmation = false
 
@@ -65,7 +66,7 @@ struct ProfileView: View {
                         } label: {
                             HStack(spacing: 6) {
                                 Image(systemName: "pencil")
-                                Text("Düzenle")
+                                Text(AppStrings.edit(for: userSettings.selectedLanguage))
                             }
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(Color.appForeground.opacity(0.7))
@@ -78,31 +79,31 @@ struct ProfileView: View {
                     VStack(spacing: 12) {
                         StatCard(
                             icon: "trophy.fill",
-                            title: "En Yüksek Skor",
+                            title: AppStrings.highScore(for: userSettings.selectedLanguage),
                             value: String(viewModel.highScore)
                         )
 
                         StatCard(
                             icon: "target",
-                            title: "En Uzak Soru",
+                            title: AppStrings.furthestQuestion(for: userSettings.selectedLanguage),
                             value: String(viewModel.furthestQuestion)
                         )
 
                         StatCard(
                             icon: "gamecontroller.fill",
-                            title: "Toplam Oyun",
+                            title: AppStrings.totalGames(for: userSettings.selectedLanguage),
                             value: String(viewModel.totalGamesPlayed)
                         )
 
                         StatCard(
                             icon: "chart.bar.fill",
-                            title: "Ortalama Skor",
+                            title: AppStrings.averageScore(for: userSettings.selectedLanguage),
                             value: String(viewModel.averageScore)
                         )
 
                         StatCard(
                             icon: "flame.fill",
-                            title: "En Uzun Seri",
+                            title: AppStrings.longestStreak(for: userSettings.selectedLanguage),
                             value: String(viewModel.longestStreak)
                         )
                     }
@@ -116,7 +117,7 @@ struct ProfileView: View {
                     } label: {
                         HStack {
                             Image(systemName: "trash")
-                            Text("İstatistik Sıfırla")
+                            Text(AppStrings.resetStats(for: userSettings.selectedLanguage))
                         }
                         .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(Color.appError)
@@ -135,13 +136,13 @@ struct ProfileView: View {
         .sheet(isPresented: $viewModel.isEditingUsername) {
             UsernameEditSheet(viewModel: viewModel)
         }
-        .confirmationDialog("İstatistik Sıfırla", isPresented: $showResetConfirmation, titleVisibility: .visible) {
-            Button("Sıfırla", role: .destructive) {
+        .confirmationDialog(AppStrings.resetStatsConfirmTitle(for: userSettings.selectedLanguage), isPresented: $showResetConfirmation, titleVisibility: .visible) {
+            Button(AppStrings.reset(for: userSettings.selectedLanguage), role: .destructive) {
                 viewModel.resetStats()
             }
-            Button("İptal", role: .cancel) {}
+            Button(AppStrings.cancel(for: userSettings.selectedLanguage), role: .cancel) {}
         } message: {
-            Text("Tüm istatistikler silinecek ve sıfırlanacak. Emin misiniz?")
+            Text(AppStrings.resetStatsConfirmMessage(for: userSettings.selectedLanguage))
         }
     }
 }
@@ -205,8 +206,8 @@ struct StatCard: View {
 
 struct UsernameEditSheet: View {
     @Environment(\.dismiss) private var dismiss
-    var viewModel: ProfileViewModel
-    @State private var usernameText = ""
+    @Environment(UserSettings.self) private var userSettings
+    @Bindable var viewModel: ProfileViewModel
 
     var body: some View {
         ZStack {
@@ -215,17 +216,17 @@ struct UsernameEditSheet: View {
             VStack(spacing: 30) {
                 // Header
                 VStack(spacing: 8) {
-                    Text("İsim Düzenle")
+                    Text(AppStrings.editName(for: userSettings.selectedLanguage))
                         .font(.custom("BebasNeue-Regular", size: 36))
                         .foregroundStyle(Color.appForeground)
 
-                    Text("Maksimum 20 karakter")
+                    Text(AppStrings.maxCharacters(for: userSettings.selectedLanguage))
                         .font(.system(size: 14))
                         .foregroundStyle(Color.appForeground.opacity(0.7))
                 }
 
                 // Input
-                TextField("", text: $usernameText)
+                TextField("", text: $viewModel.usernameInput)
                     .font(.title2)
                     .foregroundStyle(Color.appPrimaryText)
                     .padding(.horizontal, 20)
@@ -233,34 +234,34 @@ struct UsernameEditSheet: View {
                     .background(Color.cardLight)
                     .cornerRadius(16)
                     .overlay(
-                        Text(usernameText.isEmpty ? "Kullanıcı adı" : "")
+                        Text(AppStrings.usernamePlaceholder(for: userSettings.selectedLanguage))
                             .foregroundStyle(Color.appPrimaryText.opacity(0.3))
                             .font(.title2)
-                            .offset(x: usernameText.isEmpty ? 0 : -1000)
+                            .opacity(viewModel.usernameInput.isEmpty ? 1 : 0)
                     )
                     .onAppear {
-                        usernameText = viewModel.username
+                        viewModel.usernameInput = viewModel.username
                     }
 
                 // Character count
                 HStack {
                     Spacer()
-                    Text("\(usernameText.count)/20")
+                    Text("\(viewModel.usernameInput.count)/20")
                         .font(.system(size: 12))
-                        .foregroundStyle(usernameText.count > 20 ? Color.appError : Color.appForeground.opacity(0.7))
+                        .foregroundStyle(viewModel.usernameInput.count > 20 ? Color.appError : Color.appForeground.opacity(0.7))
                 }
                 .padding(.horizontal)
 
                 // Buttons
                 VStack(spacing: 12) {
                     Button {
-                        viewModel.userProfile.username = usernameText.trimmingCharacters(in: .whitespacesAndNewlines)
-                        viewModel.userProfile.save()
-                        dismiss()
+                        if viewModel.saveUsername() {
+                            dismiss()
+                        }
                     } label: {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
-                            Text("Kaydet")
+                            Text(AppStrings.save(for: userSettings.selectedLanguage))
                         }
                         .font(.title3)
                         .foregroundStyle(Color.appPrimaryText)
@@ -270,13 +271,13 @@ struct UsernameEditSheet: View {
                         .background(Color.appPrimaryColor)
                         .cornerRadius(16)
                     }
-                    .disabled(usernameText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || usernameText.count > 20)
-                    .opacity(usernameText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || usernameText.count > 20 ? 0.5 : 1)
+                    .disabled(!viewModel.isUsernameInputValid)
+                    .opacity(viewModel.isUsernameInputValid ? 1 : 0.5)
 
                     Button {
                         dismiss()
                     } label: {
-                        Text("İptal")
+                        Text(AppStrings.cancel(for: userSettings.selectedLanguage))
                             .font(.title3)
                             .foregroundStyle(Color.appForeground)
                             .padding(.horizontal, 24)

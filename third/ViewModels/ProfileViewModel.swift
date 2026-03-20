@@ -30,6 +30,19 @@ class ProfileViewModel {
         self.usernameInput = userProfile.username
     }
 
+    // MARK: - Username Validation
+
+    /// Allowed characters: letters (any language), digits, spaces, hyphen, underscore, dot
+    private static let allowedCharacters = CharacterSet.letters
+        .union(.decimalDigits)
+        .union(CharacterSet(charactersIn: " ._-"))
+
+    var isUsernameInputValid: Bool {
+        let trimmed = usernameInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed.count <= 20 else { return false }
+        return trimmed.unicodeScalars.allSatisfy { ProfileViewModel.allowedCharacters.contains($0) }
+    }
+
     // MARK: - Username Actions
 
     func startEditingUsername() {
@@ -37,13 +50,16 @@ class ProfileViewModel {
         isEditingUsername = true
     }
 
-    func saveUsername() {
+    /// Single save point — all username changes must go through here.
+    @discardableResult
+    func saveUsername() -> Bool {
         let trimmed = usernameInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty && trimmed.count <= 20 else { return }
+        guard isUsernameInputValid else { return false }
 
         userProfile.username = trimmed
         userProfile.save()
         isEditingUsername = false
+        return true
     }
 
     func cancelEditingUsername() {

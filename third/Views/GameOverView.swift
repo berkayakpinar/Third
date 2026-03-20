@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct GameOverView: View {
+    @Environment(UserSettings.self) private var userSettings
     let currentScore: Int
     let currentQuestion: Int
     let highScore: Int
@@ -22,10 +23,6 @@ struct GameOverView: View {
     @State private var displayedScore: Int = 0
     @State private var displayedHighScore: Int = 0
 
-    // Timer management for preventing memory leaks
-    @State private var scoreTimer: Timer?
-    @State private var highScoreTimer: Timer?
-
     var body: some View {
         ZStack {
             // Background dim overlay
@@ -37,15 +34,28 @@ struct GameOverView: View {
                 .scaleEffect(showTitle ? 1 : 0.8)
                 .opacity(showTitle ? 1 : 0)
         }
-        .onAppear {
-            animateEntrance()
+        // Entrance sequence — auto-cancelled when view disappears
+        .task {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.75)) { showTitle = true }
+
+            try? await Task.sleep(for: .seconds(0.15))
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) { showScore = true }
+
+            try? await Task.sleep(for: .seconds(0.20))
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { showHighScore = true }
+
+            try? await Task.sleep(for: .seconds(0.15))
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { showButtons = true }
         }
-        .onDisappear {
-            // Clean up timers to prevent memory leaks
-            scoreTimer?.invalidate()
-            scoreTimer = nil
-            highScoreTimer?.invalidate()
-            highScoreTimer = nil
+        // Score count-up — auto-cancelled when view disappears
+        .task {
+            try? await Task.sleep(for: .seconds(0.15))
+            await animateScore(to: currentScore)
+        }
+        // High score count-up — auto-cancelled when view disappears
+        .task {
+            try? await Task.sleep(for: .seconds(0.15))
+            await animateHighScore(to: highScore)
         }
     }
 
@@ -89,7 +99,7 @@ struct GameOverView: View {
     // MARK: - Title View
 
     private var titleView: some View {
-        Text("OYUN BİTTİ!")
+        Text(AppStrings.gameOver(for: userSettings.selectedLanguage))
             .font(.custom("BebasNeue-Regular", size: 56))
             .foregroundStyle(Color.appBackgroundColor)
     }
@@ -100,7 +110,7 @@ struct GameOverView: View {
         VStack(spacing: 24) {
             // Main Score - Large & Prominent
             VStack(spacing: 8) {
-                Text("SKOR")
+                Text(AppStrings.score(for: userSettings.selectedLanguage))
                     .font(.system(size: 24, weight: .medium))
                     .foregroundStyle(Color.appPrimaryText.opacity(0.5))
                     .tracking(2)
@@ -126,7 +136,7 @@ struct GameOverView: View {
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(Color.appSecondaryColor)
 
-                Text("En Yüksek: \(displayedHighScore)")
+                Text("\(AppStrings.best(for: userSettings.selectedLanguage)) \(displayedHighScore)")
                     .font(.system(size: 24, weight: .medium))
                     .foregroundStyle(Color.appPrimaryText.opacity(0.7))
             }
@@ -157,7 +167,7 @@ struct GameOverView: View {
                 HStack(spacing: 10) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 24, weight: .semibold))
-                    Text("Tekrar Oyna")
+                    Text(AppStrings.playAgain(for: userSettings.selectedLanguage))
                         .font(.system(size: 24, weight: .semibold))
                 }
                 .foregroundStyle(Color.appSecondaryText)
@@ -174,91 +184,33 @@ struct GameOverView: View {
 
     // MARK: - Animations
 
-    private func animateEntrance() {
-        // Main card appears
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.75)) {
-            showTitle = true
-        }
+    @MainActor
+    private func animateScore(to target: Int) async {
+        guard target > 0 else { displayedScore = 0; return }
 
-        // Then score appears with pop effect
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
-                showScore = true
-            }
-
-            // Animate score counting
-            animateScore(to: currentScore)
-            animateHighScore(to: highScore)
-        }
-
-        // Then high score appears
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                showHighScore = true
-            }
-        }
-
-        // Finally buttons appear
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-                showButtons = true
-            }
-        }
-    }
-
-    private func animateScore(to target: Int) {
-        // Invalidate previous timer to prevent multiple animations
-        scoreTimer?.invalidate()
-        scoreTimer = nil
-
-        guard target > 0 else {
-            displayedScore = 0
-            return
-        }
-
-        let duration: Double = 0.8
         let steps = 30
         let stepValue = Double(target) / Double(steps)
-        let stepDuration = duration / Double(steps)
+        let stepDuration = Duration.milliseconds(800 / steps)
 
-        var currentStep = 0
-        scoreTimer = Timer.scheduledTimer(withTimeInterval: stepDuration, repeats: true) { [self] timer in
-            currentStep += 1
-            displayedScore = Int(stepValue * Double(currentStep))
-
-            if currentStep >= steps {
-                timer.invalidate()
-                scoreTimer = nil
-                displayedScore = target
-            }
+        for step in 1...steps {
+            try? await Task.sleep(for: stepDuration)
+            guard !Task.isCancelled else { return }
+            displayedScore = step < steps ? Int(stepValue * Double(step)) : target
         }
     }
 
-    private func animateHighScore(to target: Int) {
-        // Invalidate previous timer to prevent multiple animations
-        highScoreTimer?.invalidate()
-        highScoreTimer = nil
+    @MainActor
+    private func animateHighScore(to target: Int) async {
+        guard target > 0 else { displayedHighScore = 0; return }
 
-        guard target > 0 else {
-            displayedHighScore = 0
-            return
-        }
-
-        let duration: Double = 0.6
         let steps = 20
         let stepValue = Double(target) / Double(steps)
-        let stepDuration = duration / Double(steps)
+        let stepDuration = Duration.milliseconds(600 / steps)
 
-        var currentStep = 0
-        highScoreTimer = Timer.scheduledTimer(withTimeInterval: stepDuration, repeats: true) { [self] timer in
-            currentStep += 1
-            displayedHighScore = Int(stepValue * Double(currentStep))
-
-            if currentStep >= steps {
-                timer.invalidate()
-                highScoreTimer = nil
-                displayedHighScore = target
-            }
+        for step in 1...steps {
+            try? await Task.sleep(for: stepDuration)
+            guard !Task.isCancelled else { return }
+            displayedHighScore = step < steps ? Int(stepValue * Double(step)) : target
         }
     }
 }

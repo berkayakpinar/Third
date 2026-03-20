@@ -6,27 +6,34 @@
 //
 
 import Foundation
+import OSLog
+
+private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "third", category: "UserProfile")
 
 struct UserProfile: Codable {
     var username: String
-
-    private static let userDefaultsKey = "userProfile"
 
     static let defaultProfile = UserProfile(username: "Oyuncu")
 
     // MARK: - Persistence
 
     static func load() -> UserProfile {
-        guard let data = UserDefaults.standard.data(forKey: userDefaultsKey),
+        guard let data = UserDefaults.standard.data(forKey: UserDefaultsKey.userProfile.rawValue),
               let profile = try? JSONDecoder().decode(UserProfile.self, from: data) else {
             return defaultProfile
         }
         return profile
     }
 
-    func save() {
-        if let data = try? JSONEncoder().encode(self) {
-            UserDefaults.standard.set(data, forKey: UserProfile.userDefaultsKey)
+    @discardableResult
+    func save() -> Bool {
+        do {
+            let data = try JSONEncoder().encode(self)
+            UserDefaults.standard.set(data, forKey: UserDefaultsKey.userProfile.rawValue)
+            return true
+        } catch {
+            logger.error("Failed to save UserProfile: \(error.localizedDescription)")
+            return false
         }
     }
 

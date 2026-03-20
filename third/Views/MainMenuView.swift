@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct MainMenuView: View {
+    @Environment(UserSettings.self) private var userSettings
     @State private var viewModel = MainMenuViewModel()
-    @State private var navigationPath = NavigationPath()
+    @State private var navigationPath: [AppRoute] = []
 
     // Animation states for circle transition
     @State private var isAnimatingCircle = false
@@ -17,7 +18,7 @@ struct MainMenuView: View {
     @State private var lilaOverlayOpacity: Double = 0.0
 
     var body: some View {
-        NavigationStack(path: $navigationPath) {
+        NavigationStack(path: $navigationPath) {  // path type: [AppRoute]
             GeometryReader { geometry in
                 ZStack {
                     // Background
@@ -44,41 +45,32 @@ struct MainMenuView: View {
                     // Buttons VStack - positioned below the circle
                     VStack(spacing: 16) {
                         MainMenuButton(
-                            title: "Devam Et",
+                            title: AppStrings.continueGame(for: userSettings.selectedLanguage),
                             icon: "play.circle.fill",
                             color: Color.appPrimaryColor,
-                            action: {
-                                // Continue existing session - don't start new game
-                                navigateToGame()
-                            },
+                            action: { navigateToGame() },
                             disabled: !viewModel.canContinueGame
                         )
 
                         MainMenuButton(
-                            title: "Yeni Oyun",
+                            title: AppStrings.newGame(for: userSettings.selectedLanguage),
                             icon: "plus.circle.fill",
                             color: Color.appSuccess,
-                            action: {
-                                startNewGameWithAnimation()
-                            }
+                            action: { startNewGameWithAnimation() }
                         )
 
                         MainMenuButton(
-                            title: "Profil",
+                            title: AppStrings.profile(for: userSettings.selectedLanguage),
                             icon: "person.circle.fill",
                             color: Color.appCard,
-                            action: {
-                                navigationPath.append("profile")
-                            }
+                            action: { navigationPath.append(AppRoute.profile) }
                         )
 
                         MainMenuButton(
-                            title: "Ayarlar",
+                            title: AppStrings.settings(for: userSettings.selectedLanguage),
                             icon: "gearshape.fill",
                             color: Color.appCard,
-                            action: {
-                                navigationPath.append("settings")
-                            }
+                            action: { navigationPath.append(AppRoute.settings) }
                         )
                     }
                     .padding(.horizontal, 32)
@@ -98,18 +90,16 @@ struct MainMenuView: View {
                     }
                 }
             }
-            .navigationDestination(for: String.self) { destination in
-                switch destination {
-                case "game":
+            .navigationDestination(for: AppRoute.self) { route in
+                switch route {
+                case .game:
                     GameViewWrapper()
-                case "profile":
+                case .profile:
                     ProfileView()
                         .environment(\.navigationPath, $navigationPath)
-                case "settings":
+                case .settings:
                     SettingsView()
                         .environment(\.navigationPath, $navigationPath)
-                default:
-                    EmptyView()
                 }
             }
             .navigationBarHidden(true)
@@ -140,34 +130,26 @@ struct MainMenuView: View {
 
     private func navigateToGame() {
         // Direct navigation without starting new game
-        navigationPath.append("game")
+        navigationPath.append(AppRoute.game)
     }
 
     private func startNewGameWithAnimation() {
-        // Start the game session first
         _ = viewModel.startNewGame()
-
-        // Start animation
         isAnimatingCircle = true
 
-        // Expand circle to cover the screen
         withAnimation(.easeInOut(duration: AnimationConfig.circleAnimationDuration)) {
             circleScale = AnimationConfig.circleMaxScale
         }
 
-        // When circle is big enough, show lila overlay immediately
-        DispatchQueue.main.asyncAfter(deadline: .now() + AnimationConfig.overlayDelay) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(AnimationConfig.overlayDelay))
             lilaOverlayOpacity = 1.0
-        }
 
-        // Navigate to game (lila overlay covers it)
-        DispatchQueue.main.asyncAfter(deadline: .now() + AnimationConfig.navigationDelay) {
-            navigationPath.append("game")
+            try? await Task.sleep(for: .seconds(AnimationConfig.navigationDelay - AnimationConfig.overlayDelay))
+            navigationPath.append(AppRoute.game)
             resetAnimationState()
-        }
 
-        // Fade out lila overlay after delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + AnimationConfig.fadeOutDelay) {
+            try? await Task.sleep(for: .seconds(AnimationConfig.fadeOutDelay - AnimationConfig.navigationDelay))
             withAnimation(.easeOut(duration: AnimationConfig.fadeOutDuration)) {
                 lilaOverlayOpacity = 0.0
             }

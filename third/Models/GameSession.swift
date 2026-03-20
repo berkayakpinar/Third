@@ -9,7 +9,6 @@ import Foundation
 
 struct GameSession: Codable {
     var gameState: GameState
-    var currentQuestionIndex: Int
     var questionStates: [QuestionState]
     var timestamp: Date
     var isNewGame: Bool

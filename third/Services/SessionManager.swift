@@ -38,7 +38,7 @@ class SessionManager {
     static let shared = SessionManager()
 
     private let userDefaults = UserDefaults.standard
-    private let sessionKey = "currentGameSession"
+    private let sessionKey = UserDefaultsKey.currentGameSession.rawValue
 
     var currentSession: GameSession? {
         didSet {
@@ -58,7 +58,6 @@ class SessionManager {
     func startNewGame() -> GameSession {
         let newSession = GameSession(
             gameState: GameState(),
-            currentQuestionIndex: 1,
             questionStates: [],
             timestamp: Date(),
             isNewGame: true

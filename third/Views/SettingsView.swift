@@ -10,6 +10,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.navigationPath) private var navigationPath
     @Environment(\.dismiss) private var dismiss
+    @Environment(UserSettings.self) private var userSettings
     @State private var viewModel = SettingsViewModel()
 
     var body: some View {
@@ -49,7 +50,7 @@ struct SettingsView: View {
 
                     // Header
                     VStack(spacing: 12) {
-                        Text("Ayarlar")
+                        Text(AppStrings.settingsTitle(for: userSettings.selectedLanguage))
                             .font(.custom("BebasNeue-Regular", size: 48))
                             .foregroundStyle(Color.appForeground)
                     }
@@ -60,37 +61,35 @@ struct SettingsView: View {
                     VStack(spacing: 12) {
                         SettingsToggleCard(
                             icon: "speaker.wave.2.fill",
-                            title: "Ses Efektleri",
-                            description: "Oyun içi sesleri aç/kapat",
-                            isOn: viewModel.settings.soundEffectsEnabled,
-                            action: {
-                                viewModel.toggleSoundEffects()
-                            }
+                            title: AppStrings.soundEffects(for: userSettings.selectedLanguage),
+                            description: AppStrings.soundEffectsDescription(for: userSettings.selectedLanguage),
+                            isOn: userSettings.soundEffectsEnabled,
+                            action: { viewModel.toggleSoundEffects(settings: userSettings) }
                         )
 
                         SettingsLanguageToggleCard(
                             icon: "globe.fill",
-                            title: "Dil Seçeneği",
-                            currentValue: "\(viewModel.settings.selectedLanguage.flag) \(viewModel.settings.selectedLanguage.displayName)"
+                            title: AppStrings.language(for: userSettings.selectedLanguage),
+                            currentValue: "\(userSettings.selectedLanguage.flag) \(userSettings.selectedLanguage.displayName)"
                         ) {
-                            viewModel.toggleLanguage()
+                            viewModel.toggleLanguage(settings: userSettings)
                         }
 
                         SettingsInfoCard(
                             icon: "info.circle.fill",
-                            title: "Sürüm",
-                            value: viewModel.settings.appVersion
+                            title: AppStrings.version(for: userSettings.selectedLanguage),
+                            value: userSettings.appVersion
                         )
 
                         SettingsInfoCard(
                             icon: "person.crop.circle.badge.checkmark",
                             title: "Developer",
-                            value: viewModel.settings.developerName
+                            value: userSettings.developerName
                         )
 
                         SettingsButtonCard(
                             icon: "arrow.counterclockwise",
-                            title: "Varsayılan Ayarlara Dön",
+                            title: AppStrings.resetToDefaults(for: userSettings.selectedLanguage),
                             color: Color.appError
                         ) {
                             viewModel.showResetConfirmation = true
@@ -104,13 +103,13 @@ struct SettingsView: View {
         }
         .navigationBarHidden(true)
         .toolbar(.hidden, for: .navigationBar)
-        .confirmationDialog("Ayarları Sıfırla", isPresented: $viewModel.showResetConfirmation, titleVisibility: .visible) {
-            Button("Sıfırla", role: .destructive) {
-                viewModel.settings.resetToDefaults()
+        .confirmationDialog(AppStrings.resetSettingsConfirmTitle(for: userSettings.selectedLanguage), isPresented: $viewModel.showResetConfirmation, titleVisibility: .visible) {
+            Button(AppStrings.reset(for: userSettings.selectedLanguage), role: .destructive) {
+                userSettings.resetToDefaults()
             }
-            Button("İptal", role: .cancel) {}
+            Button(AppStrings.cancel(for: userSettings.selectedLanguage), role: .cancel) {}
         } message: {
-            Text("Tüm ayarlar varsayılan değerlere dönecek. Emin misiniz?")
+            Text(AppStrings.resetSettingsConfirmMessage(for: userSettings.selectedLanguage))
         }
     }
 }

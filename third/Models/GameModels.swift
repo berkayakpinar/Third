@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct AnswerOption: Identifiable, Codable {
-    let id: UUID
+    /// Stable, content-derived identifier — consistent across encode/decode cycles.
+    let id: String
     let keywords: [String]          // Case-insensitive variations
     let displayWord: String          // The word to reveal
     let type: AnswerType
@@ -19,7 +20,7 @@ struct AnswerOption: Identifiable, Codable {
     }
 
     init(keywords: [String], displayWord: String, type: AnswerType, isRevealed: Bool = false) {
-        self.id = UUID()
+        self.id = displayWord
         self.keywords = keywords
         self.displayWord = displayWord
         self.type = type
@@ -32,7 +33,7 @@ struct AnswerOption: Identifiable, Codable {
         self.displayWord = try container.decode(String.self, forKey: .displayWord)
         self.type = try container.decode(AnswerType.self, forKey: .type)
         self.isRevealed = try container.decodeIfPresent(Bool.self, forKey: .isRevealed) ?? false
-        self.id = UUID()
+        self.id = displayWord
     }
 
     func encode(to encoder: Encoder) throws {
@@ -44,10 +45,10 @@ struct AnswerOption: Identifiable, Codable {
     }
 }
 
-enum AnswerType: Codable {
-    case trap      // Index 0 - Red border - Instant fail
-    case target    // Index 2 - Green border - Win condition
-    case normal    // Others - Gray border - Lose 1 life
+enum AnswerType: String, Codable {
+    case trap   = "trap"    // Red border - Instant fail
+    case target = "target"  // Green border - Win condition
+    case normal = "normal"  // Gray border - Lose 1 life
 }
 
 struct GameQuestion: Codable {

@@ -2,16 +2,9 @@
 //  thirdTests.swift
 //  thirdTests
 //
-//  Created by Berkay Akpınar on 12.03.2026.
+//  Test files are organized by component:
+//    - GameViewModelTests.swift  — game logic (mock dependencies)
+//    - GameStatsManagerTests.swift — stats persistence (isolated UserDefaults)
+//    - Mocks/MockQuestionProvider.swift
+//    - Mocks/MockStatsManager.swift
 //
-
-import Testing
-@testable import third
-
-struct thirdTests {
-
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-    }
-
-}
